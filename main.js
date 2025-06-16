@@ -15,55 +15,60 @@ function App() {
   const [offsetX, setOffsetX] = useState(0);
 
   useEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
+  const card = cardRef.current;
+  if (!card) return;
 
-    let startX = 0;
+  let startX = 0;
 
-    const onMouseDown = (e) => {
-      setDragging(true);
-      startX = e.clientX;
-    };
+  const onMouseDown = (e) => {
+    setDragging(true);
+    startX = e.clientX;
+    card.style.transition = "none";
+  };
 
-    const onMouseMove = (e) => {
-      if (!dragging) return;
-      const moveX = e.clientX - startX;
-      setOffsetX(moveX);
-      card.style.transform = `translateX(${moveX}px) rotate(${moveX / 30}deg)`;
-    };
+  const onMouseMove = (e) => {
+    if (!dragging) return;
+    const moveX = e.clientX - startX;
+    setOffsetX(moveX);
+    card.style.transform = `translateX(${moveX}px) rotate(${moveX / 20}deg)`;
+  };
 
-    const onMouseUp = () => {
-      if (!dragging) return;
-      setDragging(false);
+  const onMouseUp = () => {
+    if (!dragging) return;
+    setDragging(false);
 
-      if (Math.abs(offsetX) > 80) {
-        const direction = offsetX > 0 ? 500 : -500;
-        card.style.transition = "transform 0.3s ease";
-        card.style.transform = `translateX(${direction}px) rotate(${offsetX / 15}deg)`;
+    // If dragged far enough
+    if (Math.abs(offsetX) > 80) {
+      const direction = offsetX > 0 ? 600 : -600;
+      card.style.transition = "transform 0.3s ease-out";
+      card.style.transform = `translateX(${direction}px) rotate(${offsetX > 0 ? 30 : -30}deg)`;
 
-        setTimeout(() => {
-          card.style.transition = "none";
-          card.style.transform = "translateX(0px) rotate(0deg)";
-          setOffsetX(0);
-          setCurrentIndex((prev) => (prev + 1) % images.length);
-        }, 300);
-      } else {
-        card.style.transition = "transform 0.2s ease";
-        card.style.transform = "translateX(0px) rotate(0deg)";
+      // Wait for animation, then reset
+      setTimeout(() => {
+        card.style.transition = "none";
+        card.style.transform = "translateX(0) rotate(0)";
         setOffsetX(0);
-      }
-    };
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+      }, 300);
+    } else {
+      // Not far enough – snap back
+      card.style.transition = "transform 0.2s ease";
+      card.style.transform = "translateX(0) rotate(0)";
+      setOffsetX(0);
+    }
+  };
 
-    card.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+  card.addEventListener("mousedown", onMouseDown);
+  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("mouseup", onMouseUp);
 
-    return () => {
-      card.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [dragging, offsetX, currentIndex]);
+  return () => {
+    card.removeEventListener("mousedown", onMouseDown);
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", onMouseUp);
+  };
+}, [dragging, offsetX, currentIndex]);
+
 
   return React.createElement(
     "div",
