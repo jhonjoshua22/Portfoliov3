@@ -1,83 +1,96 @@
-const { useRef, useEffect } = React;
+const { useState, useRef } = React;
 
 function App() {
-  const sliderRef = React.useRef(null);
+  const images = [
+    "https://source.unsplash.com/400x300/?code",
+    "https://source.unsplash.com/400x300/?react",
+    "https://source.unsplash.com/400x300/?coffee",
+    "https://source.unsplash.com/400x300/?keyboard"
+  ];
 
-  useEffect(() => {
-    const slider = sliderRef.current;
-    let isDown = false;
-    let startX;
-    let scrollLeft;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const cardRef = useRef(null);
 
-    const handleMouseDown = (e) => {
-      isDown = true;
-      slider.classList.add("cursor-grabbing");
-      startX = e.pageX - slider.offsetLeft;
-      scrollLeft = slider.scrollLeft;
+  const handleDrag = () => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    let isDragging = false;
+    let startX = 0;
+
+    const onMouseDown = (e) => {
+      isDragging = true;
+      startX = e.clientX;
     };
 
-    const handleMouseLeave = () => {
-      isDown = false;
-      slider.classList.remove("cursor-grabbing");
+    const onMouseMove = (e) => {
+      if (!isDragging) return;
+      const moveX = e.clientX - startX;
+      card.style.transform = `translateX(${moveX}px) rotate(${moveX / 20}deg)`;
     };
 
-    const handleMouseUp = () => {
-      isDown = false;
-      slider.classList.remove("cursor-grabbing");
+    const onMouseUp = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      const moveX = e.clientX - startX;
+      if (Math.abs(moveX) > 100) {
+        // Slide out
+        card.style.transition = "transform 0.3s ease-out";
+        card.style.transform = `translateX(${moveX > 0 ? 500 : -500}px) rotate(${moveX / 10}deg)`;
+
+        setTimeout(() => {
+          card.style.transition = "none";
+          card.style.transform = "none";
+          setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 300);
+      } else {
+        // Return to center
+        card.style.transition = "transform 0.3s ease";
+        card.style.transform = "translateX(0px) rotate(0deg)";
+      }
     };
 
-    const handleMouseMove = (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const x = e.pageX - slider.offsetLeft;
-      const walk = (x - startX) * 2;
-      slider.scrollLeft = scrollLeft - walk;
-    };
-
-    slider.addEventListener("mousedown", handleMouseDown);
-    slider.addEventListener("mouseleave", handleMouseLeave);
-    slider.addEventListener("mouseup", handleMouseUp);
-    slider.addEventListener("mousemove", handleMouseMove);
+    card.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
 
     return () => {
-      slider.removeEventListener("mousedown", handleMouseDown);
-      slider.removeEventListener("mouseleave", handleMouseLeave);
-      slider.removeEventListener("mouseup", handleMouseUp);
-      slider.removeEventListener("mousemove", handleMouseMove);
+      card.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
-  }, []);
+  };
+
+  React.useEffect(handleDrag, [currentIndex]);
 
   return React.createElement(
     "div",
-    { className: "min-h-screen flex flex-col md:flex-row items-center justify-between px-6 py-12" },
-    // Left Text Section
+    { className: "min-h-screen flex flex-col items-center justify-center px-4" },
+
+    // Header
+    React.createElement("h1", { className: "text-3xl font-bold text-purple-600 mb-6 text-center" },
+      "Hi, I'm Jhon Joshua Abutan"),
+
+    React.createElement("p", { className: "text-gray-700 text-center max-w-md mb-10" },
+      "Frontend developer. I love designing websites and turning them into code. Slightly addicted to coffee ☕ and not a fan of CSS 😅"),
+
+    // Stack of photos
     React.createElement(
       "div",
-      { className: "max-w-xl text-center md:text-left mb-8 md:mb-0" },
-      React.createElement("h1", { className: "text-4xl font-bold text-purple-600 mb-4" }, "Hi, I'm Jhon Joshua Abutan"),
-      React.createElement("p", { className: "text-lg text-gray-700 mb-4" }, "Frontend developer. I love designing websites and turning them into code."),
-      React.createElement("p", { className: "italic text-gray-500" }, "Slightly addicted to coffee ☕ and not a fan of CSS 😅")
-    ),
-    // Right Photo Slider
-    React.createElement(
-      "div",
-      {
-        ref: sliderRef,
-        className: "flex gap-4 overflow-x-auto p-2 cursor-grab max-w-[400px]"
-      },
-      [
-        "https://source.unsplash.com/400x300/?code",
-        "https://source.unsplash.com/400x300/?react",
-        "https://source.unsplash.com/400x300/?coffee",
-        "https://source.unsplash.com/400x300/?keyboard"
-      ].map((src, i) =>
-        React.createElement("img", {
-          key: i,
-          src,
-          className: "w-60 h-40 object-cover rounded-xl shadow-md flex-shrink-0",
-          alt: `Photo ${i + 1}`
-        })
-      )
+      { className: "relative w-[400px] h-[300px]" },
+
+      images.slice(0).reverse().map((src, index) => {
+        const imgIndex = (currentIndex + index) % images.length;
+        const isTop = index === images.length - 1;
+        return React.createElement("img", {
+          key: index,
+          ref: isTop ? cardRef : null,
+          src: images[imgIndex],
+          className: `absolute top-0 left-0 w-full h-full object-cover rounded-xl shadow-lg transition-all duration-300 ease-in-out ${isTop ? "cursor-grab z-30" : `z-${20 - index}`}`,
+          style: { transform: `scale(${1 - (images.length - 1 - index) * 0.02}) translateY(${(images.length - 1 - index) * 4}px)` }
+        });
+      })
     )
   );
 }
