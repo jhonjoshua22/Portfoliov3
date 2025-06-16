@@ -13,12 +13,16 @@ function App() {
 
   const [index, setIndex] = useState(0);
 
-  const next = (direction) => {
-    setIndex((prev) => (prev + direction + images.length) % images.length);
+  const next = () => {
+    setIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prev = () => {
+    setIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 overflow-hidden">
       <div className="flex flex-col lg:flex-row items-center gap-8 max-w-6xl w-full">
         {/* Intro Section */}
         <div className="flex-1 text-center lg:text-left">
@@ -31,25 +35,31 @@ function App() {
         </div>
 
         {/* Photo Stack Carousel */}
-        <div className="relative w-[220px] h-[300px] flex-shrink-0">
-          <AnimatePresence initial={false} mode="popLayout">
-            <motion.img
-              key={index}
-              src={images[index]}
-              className="absolute w-full h-full object-cover rounded-xl shadow-xl cursor-grab"
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={(e, info) => {
-                const offset = info.offset.x;
-                if (offset > 80) next(1);
-                else if (offset < -80) next(-1);
-              }}
-              initial={{ x: 300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: index > 0 ? -300 : 300, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            />
-          </AnimatePresence>
+        <div className="relative w-[250px] h-[320px] flex-shrink-0">
+          {images.map((img, i) => {
+            const isCurrent = i === index;
+            const offset = ((i - index + images.length) % images.length);
+            const zIndex = images.length - offset;
+            return (
+              <motion.img
+                key={i}
+                src={img}
+                className="absolute w-full h-full object-cover rounded-xl shadow-xl touch-none select-none"
+                style={{
+                  zIndex,
+                  transform: `translateX(${offset * 15}px) rotate(${offset * 2}deg) scale(${1 - offset * 0.05})`,
+                  opacity: offset > 2 ? 0 : 1,
+                }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(e, info) => {
+                  if (info.offset.x > 50) prev();
+                  else if (info.offset.x < -50) next();
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
