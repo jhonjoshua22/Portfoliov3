@@ -1,5 +1,3 @@
-// main.js or app.jsx (whichever you're using)
-
 const { useState, useRef, useEffect } = React;
 
 function App() {
@@ -31,26 +29,26 @@ function App() {
       if (!dragging) return;
       const moveX = e.clientX - startX;
       setOffsetX(moveX);
-      card.style.transform = `translateX(${moveX}px) rotate(${moveX / 20}deg)`;
+      card.style.transform = `translateX(${moveX}px) rotate(${moveX / 30}deg)`;
     };
 
     const onMouseUp = () => {
       if (!dragging) return;
       setDragging(false);
 
-      if (Math.abs(offsetX) > 100) {
-        const direction = offsetX > 0 ? 600 : -600;
-        card.style.transition = "transform 0.4s ease";
-        card.style.transform = `translateX(${direction}px) rotate(${offsetX / 10}deg)`;
+      if (Math.abs(offsetX) > 80) {
+        const direction = offsetX > 0 ? 500 : -500;
+        card.style.transition = "transform 0.3s ease";
+        card.style.transform = `translateX(${direction}px) rotate(${offsetX / 15}deg)`;
 
         setTimeout(() => {
           card.style.transition = "none";
           card.style.transform = "translateX(0px) rotate(0deg)";
           setOffsetX(0);
           setCurrentIndex((prev) => (prev + 1) % images.length);
-        }, 400);
+        }, 300);
       } else {
-        card.style.transition = "transform 0.3s ease";
+        card.style.transition = "transform 0.2s ease";
         card.style.transform = "translateX(0px) rotate(0deg)";
         setOffsetX(0);
       }
@@ -69,36 +67,42 @@ function App() {
 
   return React.createElement(
     "div",
-    { className: "min-h-screen bg-gray-100 flex items-center justify-center px-6" },
+    { className: "min-h-screen bg-gray-100 flex items-center justify-center px-4" },
 
     React.createElement(
       "div",
-      { className: "flex flex-col lg:flex-row items-center lg:items-start gap-10 max-w-6xl w-full" },
+      { className: "flex flex-col lg:flex-row items-center gap-8 max-w-5xl w-full" },
 
-      // 👤 INTRO TEXT
+      // 🧍 Intro
       React.createElement(
         "div",
         { className: "text-center lg:text-left flex-1" },
-        React.createElement("h1", { className: "text-4xl font-bold text-purple-600 mb-4" }, "Hi, I'm Jhon Joshua Abutan"),
-        React.createElement("p", { className: "text-gray-700 text-lg max-w-md" },
+        React.createElement("h1", { className: "text-3xl font-bold text-purple-600 mb-2" }, "Hi, I'm Jhon Joshua Abutan"),
+        React.createElement("p", { className: "text-gray-700 max-w-sm mx-auto lg:mx-0" },
           "Frontend developer. I love designing websites and turning them into code. Slightly addicted to coffee ☕ and not a fan of CSS 😅")
       ),
 
-      // 🖼️ IMAGE STACK
+      // 🖼️ Image Card Stack
       React.createElement(
         "div",
-        { className: "relative w-[300px] h-[400px] flex-1" },
+        { className: "relative w-[200px] h-[280px] flex-1 select-none" },
+
         images.slice(0).reverse().map((src, index) => {
           const imgIndex = (currentIndex + index) % images.length;
           const isTop = index === images.length - 1;
+
+          // Slight offset & rotate
+          const translateY = (images.length - 1 - index) * 6;
+          const rotate = (images.length - 1 - index) * 1.5;
 
           return React.createElement("img", {
             key: index,
             ref: isTop ? cardRef : null,
             src: images[imgIndex],
-            className: `absolute top-0 left-0 w-full h-full object-cover rounded-xl shadow-lg transition-all duration-300 ease-in-out ${isTop ? "cursor-grab z-30" : `z-${20 - index}`}`,
+            className: `absolute top-0 left-0 w-full h-full object-cover rounded-xl shadow-md transition-all duration-300 ease-in-out ${isTop ? "cursor-grab z-30" : `z-${20 - index}`}`,
             style: {
-              transform: `scale(${1 - (images.length - 1 - index) * 0.02}) translateY(${(images.length - 1 - index) * 4}px)`
+              transform: `translateY(${translateY}px) rotate(${rotate}deg) scale(${1 - (images.length - 1 - index) * 0.015})`,
+              transition: 'transform 0.3s ease'
             }
           });
         })
