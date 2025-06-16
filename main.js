@@ -2,10 +2,10 @@ const { useState, useRef } = React;
 
 function App() {
   const images = [
-    "https://source.unsplash.com/400x300/?code",
-    "https://source.unsplash.com/400x300/?react",
-    "https://source.unsplash.com/400x300/?coffee",
-    "https://source.unsplash.com/400x300/?keyboard"
+    ".../images/IMG_0676.jpeg",
+    ".../images/IMG_1273.jpeg",
+    ".../images/IMG_2953.jpeg",
+    ".../images/IMG_9615.jpeg",
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
